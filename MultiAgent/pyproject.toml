@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "synthetic_tooluse"
+version = "0.1.0"
+description = "Synthetic data generation system for tool-using AI agents"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0.0",
+    "typer>=0.9.0",
+    "networkx>=3.0",
+    "litellm>=1.0.0",
+    "pytest>=7.0.0",
+    "python-dotenv>=1.0.0"
+]
+
+[project.scripts]
+synthetic-tooluse = "synthetic_tooluse.cli:app"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,10 @@
+{
+  "endpoint_entropy": 3.5135901853196234,
+  "unique_chain_ratio": 0.673469387755102,
+  "mean_naturalness": 4.204081632653061,
+  "mean_tool_correctness": 3.0969387755102042,
+  "mean_task_completion": 4.061224489795919,
+  "mean_grounding_coherence": 4.301020408163265,
+  "num_records": 98,
+  "multi_tool_ratio": 0.5918367346938775
+}

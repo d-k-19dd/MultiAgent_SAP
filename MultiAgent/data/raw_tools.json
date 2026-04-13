@@ -1,0 +1,380 @@
+[
+  {
+    "tool_id": "Travel/flights_api",
+    "tool_name": "flights_api",
+    "category": "Travel",
+    "domain": "Travel",
+    "description": "Search and compare flights for trip planning workflows.",
+    "endpoints": [
+      {
+        "endpoint_id": "Travel/flights_api/search_flights",
+        "endpoint_name": "search_flights",
+        "description": "Search available flights by airports and departure date. Returns a flight_id to use for itinerary and booking steps.",
+        "parameters": [
+          {"name": "origin_airport", "type": "string", "required": true, "description": "IATA origin code"},
+          {"name": "destination_airport", "type": "string", "required": true, "description": "IATA destination code"},
+          {"name": "departure_date", "type": "string", "required": true, "description": "YYYY-MM-DD"}
+        ],
+        "response": {
+          "properties": {
+            "flight_id": {"type": "string"},
+            "airline": {"type": "string"},
+            "departs_at": {"type": "string"},
+            "price_usd": {"type": "integer"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Travel/hotels_api",
+    "tool_name": "hotels_api",
+    "category": "Travel",
+    "domain": "Travel",
+    "description": "Find and book hotels using IDs produced by search steps.",
+    "endpoints": [
+      {
+        "endpoint_id": "Travel/hotels_api/search_hotels",
+        "endpoint_name": "search_hotels",
+        "description": "Search hotels for a city and dates. Returns hotel_id for booking.",
+        "parameters": [
+          {"name": "city", "type": "string", "required": true},
+          {"name": "check_in", "type": "string", "required": true, "description": "YYYY-MM-DD"},
+          {"name": "check_out", "type": "string", "required": true, "description": "YYYY-MM-DD"}
+        ],
+        "response": {
+          "properties": {
+            "hotel_id": {"type": "string"},
+            "name": {"type": "string"},
+            "nightly_rate_usd": {"type": "integer"}
+          }
+        }
+      },
+      {
+        "endpoint_id": "Travel/hotels_api/book_hotel",
+        "endpoint_name": "book_hotel",
+        "description": "Book a hotel using hotel_id from search_hotels.",
+        "parameters": [
+          {"name": "hotel_id", "type": "string", "required": true},
+          {"name": "check_in", "type": "string", "required": true},
+          {"name": "check_out", "type": "string", "required": true},
+          {"name": "guest_name", "type": "string", "required": true}
+        ],
+        "response": {
+          "properties": {
+            "booking_id": {"type": "string"},
+            "confirmation_code": {"type": "string"},
+            "status": {"type": "string"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Travel/itinerary_api",
+    "tool_name": "itinerary_api",
+    "category": "Travel",
+    "domain": "Travel",
+    "description": "Attractions and multi-day itinerary planning tied to flight and hotel selections.",
+    "endpoints": [
+      {
+        "endpoint_id": "Travel/itinerary_api/get_attractions",
+        "endpoint_name": "get_attractions",
+        "description": "List top attractions for a destination city. Returns attraction_id for itinerary building.",
+        "parameters": [
+          {"name": "city", "type": "string", "required": true},
+          {"name": "interests", "type": "string", "required": false, "description": "Comma-separated interests"}
+        ],
+        "response": {
+          "properties": {
+            "attraction_id": {"type": "string"},
+            "title": {"type": "string"},
+            "category": {"type": "string"}
+          }
+        }
+      },
+      {
+        "endpoint_id": "Travel/itinerary_api/plan_itinerary",
+        "endpoint_name": "plan_itinerary",
+        "description": "Build a day-by-day itinerary using flight_id, hotel_id, and attraction_id from prior steps.",
+        "parameters": [
+          {"name": "flight_id", "type": "string", "required": true},
+          {"name": "hotel_id", "type": "string", "required": true},
+          {"name": "attraction_id", "type": "string", "required": true},
+          {"name": "start_date", "type": "string", "required": true}
+        ],
+        "response": {
+          "properties": {
+            "itinerary_id": {"type": "string"},
+            "days": {"type": "array"},
+            "summary": {"type": "string"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Finance/budget_api",
+    "tool_name": "budget_api",
+    "category": "Finance",
+    "domain": "Finance",
+    "description": "Monthly budget calculation from income and fixed costs.",
+    "endpoints": [
+      {
+        "endpoint_id": "Finance/budget_api/calculate_budget",
+        "endpoint_name": "calculate_budget",
+        "description": "Compute disposable income and attach a budget_plan_id for downstream expense and savings tools.",
+        "parameters": [
+          {"name": "income_monthly", "type": "integer", "required": true},
+          {"name": "fixed_costs_monthly", "type": "integer", "required": true},
+          {"name": "currency", "type": "string", "required": false}
+        ],
+        "response": {
+          "properties": {
+            "budget_plan_id": {"type": "string"},
+            "disposable_income_usd": {"type": "integer"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Finance/expense_api",
+    "tool_name": "expense_api",
+    "category": "Finance",
+    "domain": "Finance",
+    "description": "Track spending against a budget plan.",
+    "endpoints": [
+      {
+        "endpoint_id": "Finance/expense_api/track_expenses",
+        "endpoint_name": "track_expenses",
+        "description": "Record expenses linked to budget_plan_id and return running totals.",
+        "parameters": [
+          {"name": "budget_plan_id", "type": "string", "required": true},
+          {"name": "category", "type": "string", "required": true},
+          {"name": "amount", "type": "integer", "required": true}
+        ],
+        "response": {
+          "properties": {
+            "expense_entry_id": {"type": "string"},
+            "running_total_usd": {"type": "integer"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Finance/savings_api",
+    "tool_name": "savings_api",
+    "category": "Finance",
+    "domain": "Finance",
+    "description": "Savings goals given disposable income.",
+    "endpoints": [
+      {
+        "endpoint_id": "Finance/savings_api/savings_planner",
+        "endpoint_name": "savings_planner",
+        "description": "Propose a savings allocation using disposable_income_usd from calculate_budget.",
+        "parameters": [
+          {"name": "disposable_income_usd", "type": "integer", "required": true},
+          {"name": "goal_amount", "type": "integer", "required": true},
+          {"name": "horizon_months", "type": "integer", "required": true}
+        ],
+        "response": {
+          "properties": {
+            "savings_plan_id": {"type": "string"},
+            "monthly_contribution_usd": {"type": "integer"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Productivity/schedule_api",
+    "tool_name": "schedule_api",
+    "category": "Productivity",
+    "domain": "Productivity",
+    "description": "Create focused work blocks and schedules.",
+    "endpoints": [
+      {
+        "endpoint_id": "Productivity/schedule_api/create_schedule",
+        "endpoint_name": "create_schedule",
+        "description": "Create a schedule block; returns schedule_block_id for reminders and calendar.",
+        "parameters": [
+          {"name": "day", "type": "string", "required": true, "description": "YYYY-MM-DD"},
+          {"name": "start_time", "type": "string", "required": true},
+          {"name": "end_time", "type": "string", "required": true},
+          {"name": "title", "type": "string", "required": true}
+        ],
+        "response": {
+          "properties": {
+            "schedule_block_id": {"type": "string"},
+            "status": {"type": "string"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Productivity/reminder_api",
+    "tool_name": "reminder_api",
+    "category": "Productivity",
+    "domain": "Productivity",
+    "description": "Reminders anchored to schedule blocks.",
+    "endpoints": [
+      {
+        "endpoint_id": "Productivity/reminder_api/set_reminder",
+        "endpoint_name": "set_reminder",
+        "description": "Attach a reminder to a schedule_block_id from create_schedule.",
+        "parameters": [
+          {"name": "schedule_block_id", "type": "string", "required": true},
+          {"name": "remind_at", "type": "string", "required": true},
+          {"name": "channel", "type": "string", "required": false}
+        ],
+        "response": {
+          "properties": {
+            "reminder_id": {"type": "string"},
+            "status": {"type": "string"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Productivity/calendar_api",
+    "tool_name": "calendar_api",
+    "category": "Productivity",
+    "domain": "Productivity",
+    "description": "Calendar events that can reference reminders.",
+    "endpoints": [
+      {
+        "endpoint_id": "Productivity/calendar_api/add_calendar_event",
+        "endpoint_name": "add_calendar_event",
+        "description": "Create a calendar event; can link reminder_id for notifications.",
+        "parameters": [
+          {"name": "reminder_id", "type": "string", "required": false},
+          {"name": "title", "type": "string", "required": true},
+          {"name": "start", "type": "string", "required": true},
+          {"name": "end", "type": "string", "required": true}
+        ],
+        "response": {
+          "properties": {
+            "event_id": {"type": "string"},
+            "calendar_link": {"type": "string"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Account/profile_api",
+    "tool_name": "profile_api",
+    "category": "Account",
+    "domain": "Account",
+    "description": "Read account profile and identifiers for billing updates.",
+    "endpoints": [
+      {
+        "endpoint_id": "Account/profile_api/get_account_info",
+        "endpoint_name": "get_account_info",
+        "description": "Fetch account_id and profile fields needed before payment updates.",
+        "parameters": [
+          {"name": "user_email", "type": "string", "required": true}
+        ],
+        "response": {
+          "properties": {
+            "account_id": {"type": "string"},
+            "email": {"type": "string"},
+            "subscription_tier": {"type": "string"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Account/billing_api",
+    "tool_name": "billing_api",
+    "category": "Account",
+    "domain": "Account",
+    "description": "Update stored payment methods for an account.",
+    "endpoints": [
+      {
+        "endpoint_id": "Account/billing_api/list_payment_methods",
+        "endpoint_name": "list_payment_methods",
+        "description": "List saved payment methods for an account_id from get_account_info before updating.",
+        "parameters": [
+          {"name": "account_id", "type": "string", "required": true}
+        ],
+        "response": {
+          "properties": {
+            "default_method_id": {"type": "string"},
+            "methods_count": {"type": "integer"}
+          }
+        }
+      },
+      {
+        "endpoint_id": "Account/billing_api/update_payment_method",
+        "endpoint_name": "update_payment_method",
+        "description": "Update payment method using account_id from get_account_info.",
+        "parameters": [
+          {"name": "account_id", "type": "string", "required": true},
+          {"name": "payment_method_token", "type": "string", "required": true},
+          {"name": "billing_zip", "type": "string", "required": false}
+        ],
+        "response": {
+          "properties": {
+            "payment_profile_id": {"type": "string"},
+            "status": {"type": "string"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Knowledge/articles_api",
+    "tool_name": "articles_api",
+    "category": "Knowledge",
+    "domain": "Knowledge",
+    "description": "Search and retrieve articles for research workflows.",
+    "endpoints": [
+      {
+        "endpoint_id": "Knowledge/articles_api/search_articles",
+        "endpoint_name": "search_articles",
+        "description": "Search articles by query; returns article_id for summarization.",
+        "parameters": [
+          {"name": "query", "type": "string", "required": true},
+          {"name": "max_results", "type": "integer", "required": false}
+        ],
+        "response": {
+          "properties": {
+            "article_id": {"type": "string"},
+            "title": {"type": "string"},
+            "url": {"type": "string"}
+          }
+        }
+      }
+    ]
+  },
+  {
+    "tool_id": "Knowledge/summarizer_api",
+    "tool_name": "summarizer_api",
+    "category": "Knowledge",
+    "domain": "Knowledge",
+    "description": "Summarize article text for the user.",
+    "endpoints": [
+      {
+        "endpoint_id": "Knowledge/summarizer_api/summarize_content",
+        "endpoint_name": "summarize_content",
+        "description": "Summarize content for article_id from search_articles.",
+        "parameters": [
+          {"name": "article_id", "type": "string", "required": true},
+          {"name": "max_words", "type": "integer", "required": false}
+        ],
+        "response": {
+          "properties": {
+            "summary": {"type": "string"},
+            "key_points": {"type": "array"}
+          }
+        }
+      }
+    ]
+  }
+]

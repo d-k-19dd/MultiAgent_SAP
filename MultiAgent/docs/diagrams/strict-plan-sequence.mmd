@@ -1,0 +1,53 @@
+sequenceDiagram
+  autonumber
+  participant PL as GenerationPipeline
+  participant INT as Intent + Constraints
+  participant SAM as ChainSampler
+  participant CP as chain_planner
+  participant US as UserSimulator
+  participant AR as arg_resolution
+  participant ED as execution_dedupe
+  participant ME as MockExecutionEngine
+  participant CM as ContextManager
+  participant SS as SessionState
+  participant AO as AssistantOrchestrator
+  participant VA as TraceValidator
+  participant JU as JudgeAgent
+  participant RP as RepairAgent
+
+  PL->>INT: sample ScenarioIntent bind keywords domains template
+  PL->>SAM: sample ChainConstraints
+  SAM->>CP: build_chain_plan graph registry endpoints
+  CP-->>SAM: ChainPlan steps
+  SAM-->>PL: plan
+
+  PL->>US: generate_initial_request plan
+  US-->>PL: user message
+
+  loop each ChainStep
+    PL->>AR: build_arguments_for_endpoint ep session context
+    AR-->>PL: forced_args
+    PL->>ED: may_execute_tool signature retryable
+    alt duplicate blocked
+      ED-->>PL: skip step
+    else execute
+      PL->>ME: execute endpoint forced_args
+      ME->>SS: update entities slots
+      ME-->>PL: tool output string
+      PL->>CM: extract_from_output
+      CM-->>PL: merged context state
+      PL->>SS: update_slots from context
+    end
+  end
+
+  PL->>AO: generate_turn finalize=True
+  AO-->>PL: final_answer optional
+
+  PL->>VA: validate record session plan registry
+  VA-->>PL: ValidationResult
+  opt invalid or low scores
+    PL->>RP: attempt_repair
+    RP-->>PL: patched ConversationRecord
+  end
+  PL->>JU: evaluate messages failure_tags
+  JU-->>PL: judge_scores

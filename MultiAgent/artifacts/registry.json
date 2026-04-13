@@ -1,0 +1,1159 @@
+[
+  {
+    "tool_id": "Travel/flights_api",
+    "tool_name": "flights_api",
+    "category": "Travel",
+    "domain": "Travel",
+    "tool_description": "Search and compare flights for trip planning workflows.",
+    "endpoints": [
+      {
+        "endpoint_id": "Travel/flights_api/search_flights",
+        "endpoint_name": "search_flights",
+        "endpoint_description": "Search available flights by airports and departure date. Returns a flight_id to use for itinerary and booking steps.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "origin_airport",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "IATA origin code",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "destination_airport",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "IATA destination code",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "departure_date",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "YYYY-MM-DD",
+            "semantic_role": "date-range"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "flight_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "flight",
+              "children": null
+            },
+            {
+              "name": "airline",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "departs_at",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "price_usd",
+              "type": "integer",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "flight"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Travel/hotels_api",
+    "tool_name": "hotels_api",
+    "category": "Travel",
+    "domain": "Travel",
+    "tool_description": "Find and book hotels using IDs produced by search steps.",
+    "endpoints": [
+      {
+        "endpoint_id": "Travel/hotels_api/search_hotels",
+        "endpoint_name": "search_hotels",
+        "endpoint_description": "Search hotels for a city and dates. Returns hotel_id for booking.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "city",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "location"
+          },
+          {
+            "name": "check_in",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "YYYY-MM-DD",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "check_out",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "YYYY-MM-DD",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "hotel_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "hotel",
+              "children": null
+            },
+            {
+              "name": "name",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "nightly_rate_usd",
+              "type": "integer",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "hotel"
+          ]
+        },
+        "quality_flags": []
+      },
+      {
+        "endpoint_id": "Travel/hotels_api/book_hotel",
+        "endpoint_name": "book_hotel",
+        "endpoint_description": "Book a hotel using hotel_id from search_hotels.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "hotel_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "check_in",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "check_out",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "guest_name",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "booking_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "booking",
+              "children": null
+            },
+            {
+              "name": "confirmation_code",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "booking"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Travel/itinerary_api",
+    "tool_name": "itinerary_api",
+    "category": "Travel",
+    "domain": "Travel",
+    "tool_description": "Attractions and multi-day itinerary planning tied to flight and hotel selections.",
+    "endpoints": [
+      {
+        "endpoint_id": "Travel/itinerary_api/get_attractions",
+        "endpoint_name": "get_attractions",
+        "endpoint_description": "List top attractions for a destination city. Returns attraction_id for itinerary building.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "city",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "location"
+          },
+          {
+            "name": "interests",
+            "normalized_type": "string",
+            "required": false,
+            "enum_values": null,
+            "description": "Comma-separated interests",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "attraction_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "attraction",
+              "children": null
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "category",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "attraction"
+          ]
+        },
+        "quality_flags": []
+      },
+      {
+        "endpoint_id": "Travel/itinerary_api/plan_itinerary",
+        "endpoint_name": "plan_itinerary",
+        "endpoint_description": "Build a day-by-day itinerary using flight_id, hotel_id, and attraction_id from prior steps.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "flight_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "hotel_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "attraction_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "start_date",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "date-range"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "itinerary_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "itinerary",
+              "children": null
+            },
+            {
+              "name": "days",
+              "type": "array",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "summary",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "itinerary"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Finance/budget_api",
+    "tool_name": "budget_api",
+    "category": "Finance",
+    "domain": "Finance",
+    "tool_description": "Monthly budget calculation from income and fixed costs.",
+    "endpoints": [
+      {
+        "endpoint_id": "Finance/budget_api/calculate_budget",
+        "endpoint_name": "calculate_budget",
+        "endpoint_description": "Compute disposable income and attach a budget_plan_id for downstream expense and savings tools.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "income_monthly",
+            "normalized_type": "integer",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "fixed_costs_monthly",
+            "normalized_type": "integer",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "currency",
+            "normalized_type": "string",
+            "required": false,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "budget_plan_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "budget_plan",
+              "children": null
+            },
+            {
+              "name": "disposable_income_usd",
+              "type": "integer",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "budget_plan"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Finance/expense_api",
+    "tool_name": "expense_api",
+    "category": "Finance",
+    "domain": "Finance",
+    "tool_description": "Track spending against a budget plan.",
+    "endpoints": [
+      {
+        "endpoint_id": "Finance/expense_api/track_expenses",
+        "endpoint_name": "track_expenses",
+        "endpoint_description": "Record expenses linked to budget_plan_id and return running totals.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "budget_plan_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "category",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "amount",
+            "normalized_type": "integer",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "expense_entry_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "expense_entry",
+              "children": null
+            },
+            {
+              "name": "running_total_usd",
+              "type": "integer",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "expense_entry"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Finance/savings_api",
+    "tool_name": "savings_api",
+    "category": "Finance",
+    "domain": "Finance",
+    "tool_description": "Savings goals given disposable income.",
+    "endpoints": [
+      {
+        "endpoint_id": "Finance/savings_api/savings_planner",
+        "endpoint_name": "savings_planner",
+        "endpoint_description": "Propose a savings allocation using disposable_income_usd from calculate_budget.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "disposable_income_usd",
+            "normalized_type": "integer",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "goal_amount",
+            "normalized_type": "integer",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "horizon_months",
+            "normalized_type": "integer",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "savings_plan_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "savings_plan",
+              "children": null
+            },
+            {
+              "name": "monthly_contribution_usd",
+              "type": "integer",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "savings_plan"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Productivity/schedule_api",
+    "tool_name": "schedule_api",
+    "category": "Productivity",
+    "domain": "Productivity",
+    "tool_description": "Create focused work blocks and schedules.",
+    "endpoints": [
+      {
+        "endpoint_id": "Productivity/schedule_api/create_schedule",
+        "endpoint_name": "create_schedule",
+        "endpoint_description": "Create a schedule block; returns schedule_block_id for reminders and calendar.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "day",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "YYYY-MM-DD",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "start_time",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "date-range"
+          },
+          {
+            "name": "end_time",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "date-range"
+          },
+          {
+            "name": "title",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "schedule_block_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "schedule_block",
+              "children": null
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "schedule_block"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Productivity/reminder_api",
+    "tool_name": "reminder_api",
+    "category": "Productivity",
+    "domain": "Productivity",
+    "tool_description": "Reminders anchored to schedule blocks.",
+    "endpoints": [
+      {
+        "endpoint_id": "Productivity/reminder_api/set_reminder",
+        "endpoint_name": "set_reminder",
+        "endpoint_description": "Attach a reminder to a schedule_block_id from create_schedule.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "schedule_block_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "remind_at",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "channel",
+            "normalized_type": "string",
+            "required": false,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "reminder_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "reminder",
+              "children": null
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "reminder"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Productivity/calendar_api",
+    "tool_name": "calendar_api",
+    "category": "Productivity",
+    "domain": "Productivity",
+    "tool_description": "Calendar events that can reference reminders.",
+    "endpoints": [
+      {
+        "endpoint_id": "Productivity/calendar_api/add_calendar_event",
+        "endpoint_name": "add_calendar_event",
+        "endpoint_description": "Create a calendar event; can link reminder_id for notifications.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "reminder_id",
+            "normalized_type": "string",
+            "required": false,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "title",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "start",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "end",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "event_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "event",
+              "children": null
+            },
+            {
+              "name": "calendar_link",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "event"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Account/profile_api",
+    "tool_name": "profile_api",
+    "category": "Account",
+    "domain": "Account",
+    "tool_description": "Read account profile and identifiers for billing updates.",
+    "endpoints": [
+      {
+        "endpoint_id": "Account/profile_api/get_account_info",
+        "endpoint_name": "get_account_info",
+        "endpoint_description": "Fetch account_id and profile fields needed before payment updates.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "user_email",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "account_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "account",
+              "children": null
+            },
+            {
+              "name": "email",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "subscription_tier",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "account"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Account/billing_api",
+    "tool_name": "billing_api",
+    "category": "Account",
+    "domain": "Account",
+    "tool_description": "Update stored payment methods for an account.",
+    "endpoints": [
+      {
+        "endpoint_id": "Account/billing_api/list_payment_methods",
+        "endpoint_name": "list_payment_methods",
+        "endpoint_description": "List saved payment methods for an account_id from get_account_info before updating.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "account_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "default_method_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "default_method",
+              "children": null
+            },
+            {
+              "name": "methods_count",
+              "type": "integer",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "default_method"
+          ]
+        },
+        "quality_flags": []
+      },
+      {
+        "endpoint_id": "Account/billing_api/update_payment_method",
+        "endpoint_name": "update_payment_method",
+        "endpoint_description": "Update payment method using account_id from get_account_info.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "account_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "payment_method_token",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          },
+          {
+            "name": "billing_zip",
+            "normalized_type": "string",
+            "required": false,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "payment_profile_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "payment_profile",
+              "children": null
+            },
+            {
+              "name": "status",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "payment_profile"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Knowledge/articles_api",
+    "tool_name": "articles_api",
+    "category": "Knowledge",
+    "domain": "Knowledge",
+    "tool_description": "Search and retrieve articles for research workflows.",
+    "endpoints": [
+      {
+        "endpoint_id": "Knowledge/articles_api/search_articles",
+        "endpoint_name": "search_articles",
+        "endpoint_description": "Search articles by query; returns article_id for summarization.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "query",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "free-text"
+          },
+          {
+            "name": "max_results",
+            "normalized_type": "integer",
+            "required": false,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "article_id",
+              "type": "string",
+              "is_id_bearing": true,
+              "inferred_entity_type": "article",
+              "children": null
+            },
+            {
+              "name": "title",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "url",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": [
+            "article"
+          ]
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  },
+  {
+    "tool_id": "Knowledge/summarizer_api",
+    "tool_name": "summarizer_api",
+    "category": "Knowledge",
+    "domain": "Knowledge",
+    "tool_description": "Summarize article text for the user.",
+    "endpoints": [
+      {
+        "endpoint_id": "Knowledge/summarizer_api/summarize_content",
+        "endpoint_name": "summarize_content",
+        "endpoint_description": "Summarize content for article_id from search_articles.",
+        "http_method": "GET",
+        "path": "",
+        "input_parameters": [
+          {
+            "name": "article_id",
+            "normalized_type": "string",
+            "required": true,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "identifier"
+          },
+          {
+            "name": "max_words",
+            "normalized_type": "integer",
+            "required": false,
+            "enum_values": null,
+            "description": "",
+            "semantic_role": "unknown"
+          }
+        ],
+        "response_schema": {
+          "fields": [
+            {
+              "name": "summary",
+              "type": "string",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            },
+            {
+              "name": "key_points",
+              "type": "array",
+              "is_id_bearing": false,
+              "inferred_entity_type": null,
+              "children": null
+            }
+          ],
+          "inferred_entity_types": []
+        },
+        "quality_flags": []
+      }
+    ],
+    "source_metadata": {
+      "original_keys": [
+        "tool_id",
+        "tool_name",
+        "category",
+        "domain",
+        "description",
+        "endpoints"
+      ]
+    }
+  }
+]

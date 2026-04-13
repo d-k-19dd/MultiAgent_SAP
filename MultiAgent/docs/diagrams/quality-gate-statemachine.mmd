@@ -1,0 +1,36 @@
+stateDiagram-v2
+  [*] --> PickIntent: inner retry loop
+  PickIntent --> SamplePlan: bind intent domains keywords
+  SamplePlan --> Simulate: ChainPlan ready
+
+  state Simulate {
+    [*] --> UserTurn
+    UserTurn --> ToolLoop: history seeded
+    state ToolLoop {
+      [*] --> ResolveArgs
+      ResolveArgs --> DedupeCheck
+      DedupeCheck --> ExecuteMock: OK
+      DedupeCheck --> DedupeCheck: skip duplicate
+      ExecuteMock --> UpdateContext: tool message
+      UpdateContext --> ResolveArgs: next step
+    }
+    ToolLoop --> FinalizeAssistant: all steps done or skipped
+  }
+
+  FinalizeAssistant --> BuildRecord: messages + metadata
+  BuildRecord --> AnalyzeQuality: trace_analyzer
+  AnalyzeQuality --> Validate: TraceValidator
+
+  Validate --> Judge: pass or after repair
+  Validate --> Repair: failures
+  Repair --> Validate: re-check
+
+  Judge --> Accept: mean score OK path
+  Judge --> Repair: low score optional
+
+  Accept --> CorpusUpdate: steering stats optional
+  CorpusUpdate --> [*]: append JSONL row
+
+  Validate --> Regenerate: hard fail e.g. zero tools
+  Judge --> Regenerate: policy tags
+  Regenerate --> PickIntent: retry budget
