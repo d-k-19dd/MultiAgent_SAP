@@ -1,86 +1,228 @@
-# Design notes
+Skip to content
+d-k-19dd
+MultiAgent_SAP
+Repository navigation
+Code
+Issues
+Pull requests
+Actions
+Projects
+Wiki
+Security and quality
+Insights
+Settings
+Files
+Go to file
+t
+MultiAgent
+artifacts
+data
+docs
+diagrams
+images
+DIAGRAMS_EXPLAINED.md
+END_TO_END_SYNTHETIC_TOOLUSE_TRACE_IMPLEMENTATION.md
+README.md
+reports
+src/synthetic_tooluse
+agents
+evaluation
+execution
+generation
+graph
+registry
+schemas
+__init__.py
+cli.py
+config.py
+tests
+DESIGN.md
+README.md
+pyproject.toml
+requirements.txt
+walkthrough.md
+MultiAgent_SAP/MultiAgent/docs
+/
+END_TO_END_SYNTHETIC_TOOLUSE_TRACE_IMPLEMENTATION.md
+in
+main
 
-This document explains **why the system is shaped the way it is**, in plain language. It matches the current code under `src/synthetic_tooluse/`.
+Edit
+
+Preview
+Indent mode
+
+Spaces
+Indent size
+
+2
+Line wrap mode
+
+Soft wrap
+Editing END_TO_END_SYNTHETIC_TOOLUSE_TRACE_IMPLEMENTATION.md file contents
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+# Synthetic Tool-Use End-to-End Trace Implementation (STU-E2E)
+
+**Official implementation name:** **Synthetic Tool-Use End-to-End Trace Implementation**  
+**Short label used in this document:** **STU-E2E**
+
+This document is the **single, detailed narrative** of how the entire system works—from a JSON file of tools to a JSONL dataset and an evaluation report. It is written for engineers and reviewers who want to understand **what runs, in what order, why it exists, and what makes it different** from “just prompt a model to write tool JSON.”
+
+**Companion material**
+
+- Visual sequence and quality gate: [DIAGRAMS_EXPLAINED.md](DIAGRAMS_EXPLAINED.md) and [images/](images/)
+- Design rationale (shorter): [DESIGN.md](../DESIGN.md)
+- Repo usage: [README.md](../README.md)
 
 ---
 
-## The problem we’re solving
+## 1. What STU-E2E is trying to solve
 
-Multi-step tool use is easy to get wrong: models invent IDs, skip steps, or call tools that do not fit the user’s goal. This pipeline **separates structure from chit-chat**:
+Real tool-using assistants must:
 
-- **Structure** (which endpoints, in what order, with what slots) comes from typed data and graph logic as much as possible.
-- **Language** (user asks, assistant explains, judge scores) sits in a thin agent layer that still respects the plan when strict mode is on.
+1. **Choose the right API** among many similar names.  
+2. **Order calls** so outputs exist before dependent inputs (e.g. search before book).  
+3. **Ground arguments** in prior results (IDs, dates, locations).  
+4. **Speak naturally** without contradicting what tools already returned.
 
----
+If you ask one LLM to “invent a multi-tool conversation,” it often:
 
-## End-to-end flow
+- Hallucinates IDs or skips prerequisite calls.  
+- Repeats the same call with the same arguments.  
+- Drifts into unrelated domains.
 
-1. **Normalize** messy tool JSON into strict **Pydantic** models (`registry/normalizer.py`). That gives you consistent parameters and response hints.
-2. **Build a directed graph** (`graph/builder.py`): endpoints are nodes; edges encode plausible hand-offs (e.g. output IDs feeding later inputs).
-3. **Pick an intent** per sample (`generation/intents.py`): domains, positive/negative keywords, and workflow templates that downstream prompts can reuse.
-4. **Plan a chain** (`generation/chain_planner.py`):
-   - For known intents, prefer **curated template paths** (`PREDEFINED_CHAINS`).
-   - Otherwise fall back to a **keyword-aware random walk** on the graph under `ChainConstraints`.
-5. **Run the conversation** (`generation/pipeline.py`):
-   - User simulator opens; assistant (and/or strict executor) issues tool calls; **mock engine** returns deterministic, schema-flavored payloads.
-   - **Context manager** and **session state** carry forward IDs and slots so later arguments are not pure fiction.
-6. **Validate, judge, optionally repair** (`generation/validator.py`, `agents/judge.py`, `agents/repair.py`) so bad traces get tagged or patched instead of silently shipping.
+**STU-E2E** treats tool use as a **systems problem first** and a **language problem second**:
 
----
+- **Systems layer:** normalize tools, build a **directed graph** of endpoints, **plan** an ordered chain under **intent constraints**, **execute** calls through a **mock engine** that returns structured-ish payloads, and **thread state** between steps.  
+- **Language layer:** user simulator and assistant (and optionally repair/judge models) dress that skeleton as a believable chat.  
+- **Quality layer:** validators and judges decide whether a trace is allowed into the dataset, with **retries** when it is not.
 
-## Why split “planner” and “assistant”?
-
-If one model both improvises dialogue **and** decides the full tool path, it often drops constraints mid-trace. The **chain planner** commits to an ordered list of endpoints first; in **strict plan execution** (`config.STRICT_PLAN_EXECUTION`, on by default), the pipeline executes that plan with grounded arguments. That keeps traces **reproducible** and easier to validate.
-
-When strict mode is off, the orchestrator still gets nudged by the plan, but you accept more divergence—useful for stress-testing prompts.
+That split is the core idea of the implementation.
 
 ---
 
-## Mock execution instead of “the model imagines JSON”
+## 2. The three phases you actually run
 
-The **mock engine** (`execution/mock_engine.py`) owns fake responses. That avoids the assistant “writing” its own tool output and accidentally papering over missing fields or invalid IDs. Grounding comes from **argument resolution** (`generation/arg_resolution.py`) plus whatever the engine puts in **session / entity store** (`execution/state.py`).
+Everything is exposed through one CLI (`src/synthetic_tooluse/cli.py`):
 
----
+| Phase | Command | Primary outputs |
+|--------|---------|------------------|
+| **A. Ingest & compile** | `synthetic-tooluse build …` | `artifacts/registry.json` (and an in-memory graph at build time—see note below) |
+| **B. Generate traces** | `synthetic-tooluse generate …` | `data/*.jsonl` (one `ConversationRecord` per line) |
+| **C. Evaluate corpus** | `synthetic-tooluse evaluate …` | `reports/*.json` (aggregate metrics + judge means) |
 
-## Intents and the graph
-
-Intents are not just labels. They supply **domains** and **keywords** so the planner’s graph walk does not wander into obviously wrong neighborhoods (e.g. lyrics APIs on a trip-planning scenario). The validator also checks endpoints against intent **negative keywords** when something slips through.
-
----
-
-## Steering (Run A vs Run B)
-
-The CLI flag `--cross-conversation-steering` toggles whether `SteeringManager` is **enabled** in `GenerationPipeline`. Today it **records** domain, endpoint, and chain usage after each accepted trace. The hook `get_sampler_weights()` is a placeholder that returns an empty dict—so flipping steering mostly affects **future wiring**, not heavy reweighting in the sampler yet. Run A / Run B are still useful as a **consistent experiment switch** as that logic grows.
+**Note on the graph:** `build` prints node/edge counts but does not persist the graph to disk by default; `generate` **reloads** `registry.json`, runs `GraphBuilder` again, and then runs `GenerationPipeline`. So the “source of truth” artifact between phases is the **registry**; the graph is **reproducibly derived** from it.
 
 ---
 
-## Quality and metrics
+## 3. Phase A — Build: from messy JSON to a typed corpus
 
-- **Corpus metrics** (`evaluation/metrics.py`): endpoint entropy, unique chain ratio from `endpoints_used` in metadata.
-- **`evaluate` command** (`cli.py`): merges those with mean judge dimensions (naturalness, tool correctness, task completion, grounding) and **multi_tool_ratio** (share of traces with ≥3 calls and ≥2 distinct tools).
+### 3.1 Entry point
 
-Expect a tension: pushing diversity can surface weaker or rarer tools if descriptions are thin—worth watching `tool_correctness` alongside entropy.
+`build` reads `data/raw_tools.json` (or another path you pass). If the file is missing, the CLI can materialize a **tiny hotel fixture** so the pipeline is still demonstrable—useful for CI and first-time clones.
 
----
+### 3.2 What happens internally: `RegistryNormalizer`
 
-## Configuration highlights
+**File:** `src/synthetic_tooluse/registry/normalizer.py`
 
-| Concern | Where |
-|--------|--------|
-| API keys vs mock LLM | `config.py` (`USE_MOCK_LLM`) |
-| Strict step-by-step execution | `SYNTH_STRICT_PLAN_EXECUTION` env → `STRICT_PLAN_EXECUTION` |
-| Default models | `DEFAULT_GENERATION_MODEL`, `DEFAULT_JUDGE_MODEL` |
+Raw tool corpora rarely agree on field names. The normalizer:
 
----
+- Accepts several shapes: `endpoints` vs `api_list`, `parameters` vs `inputs`, `response` vs `returns`, optional `response_schema`.  
+- Produces strict **`ToolDefinition`** objects with nested **`EndpointDescriptor`** records: parameters get **`ParamType`** and a coarse **`SemanticRole`** (identifier, location, date range, free text, etc.) from **name heuristics**, not from an LLM.  
+- Builds a **`ResponseSchema`** so later graph code can ask “what kinds of entities does this endpoint claim to produce?”
 
-## Limitations (honest)
+**Why this matters:** every later stage trusts **Pydantic** types. You are not regex-parsing JSON inside the planner or the mock engine; you are reading validated objects.
 
-- Graph edges depend on **heuristic** alignment between outputs and expected inputs (often ID-shaped fields). Real APIs with opaque or nested names would need richer mapping.
-- **Steering** is lightweight today; treat frequency stats as telemetry unless you extend the sampler to consume weights.
-- **Judge / repair** quality depends on model or mock behavior; mock mode is for structure, not production subjective quality.
+### 3.3 What happens internally: `GraphBuilder`
 
----
+**File:** `src/synthetic_tooluse/graph/builder.py`
 
-## Determinism
+Each **endpoint** becomes a **node** on a **NetworkX** `DiGraph`. Node attributes include `tool_id`, `domain`, `description`, **required input names**, and **inferred produced entity types** from the response schema.
 
-`generate` seeds Python’s `random` module from `--seed`. Mock mode and fixed plans make runs **repeatable** for debugging; real LLM calls add natural variance even with the same seed.
+Edges are added with typed **`RelationType`** labels and weights:
+
+- **SAME_TOOL** — weak links between endpoints of one tool (exploration within a product).  
+Use Control + Shift + m to toggle the tab key moving focus. Alternatively, use esc then tab to move to the next interactive element on the page.
+No file chosen
+Attach files by dragging & dropping, selecting or pasting them.
+ 
