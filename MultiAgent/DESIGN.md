@@ -303,4 +303,8 @@ This section is the “why should anyone care” list—grounded in what the cod
 - **Runtime:** intents + constraints → plan → (strict) execute with grounded args and mock IO → language finish.  
 - **Test harness:** analyze → validate → judge → repair or reject → JSONL.
 
-That is the full end-to-end implementation this repository ships—by design, not by accident.
+For output files you can look at data/run_a.json and data/run_b.json
+for ecaluation metrics you can find under the src/reports for each reach run
+
+
+That is the full end-to-end implementation this repository ships—by design.
