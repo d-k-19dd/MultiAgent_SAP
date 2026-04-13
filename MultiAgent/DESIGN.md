@@ -8,7 +8,6 @@ This document is the **single, detailed narrative** of how the entire system wor
 **Companion material**
 
 - Visual sequence and quality gate: [DIAGRAMS_EXPLAINED.md](DIAGRAMS_EXPLAINED.md) and [images/](images/)
-- Design rationale (shorter): [DESIGN.md](../DESIGN.md)
 - Repo usage: [README.md](../README.md)
 
 ---
